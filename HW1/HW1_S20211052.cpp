@@ -4,6 +4,35 @@
 #include <vector>
 #include <algorithm> //max
 #include <climits> // INT_MIN
+
+//Time Check for Mac
+#include <chrono>
+static std::chrono::high_resolution_clock::time_point __t_start, __t_end;
+static float _compute_time;        // 공통으로 사용할 시간 변수
+static long long _start = 0;       // 더미: 매크로 인자용
+static long long _freq  = 0;       // 더미: 매크로 인자용
+static long long _end   = 0;       // 더미: 매크로 인자용
+
+#define CHECK_TIME_START(start,freq) do { \
+  (void)(start); (void)(freq); \
+  __t_start = std::chrono::high_resolution_clock::now(); \
+} while(0)
+
+#define CHECK_TIME_END(start,end,freq,time) do { \
+  (void)(start); (void)(end); (void)(freq); \
+  __t_end = std::chrono::high_resolution_clock::now(); \
+  (time) = std::chrono::duration<float, std::milli>(__t_end - __t_start).count(); \
+} while(0)
+
+//Time Check for Window
+/*
+#include <Windows.h>
+static __int64 _start, _freq, _end;
+static float _compute_time;
+#define CHECK_TIME_START(start,freq) QueryPerformanceFrequency((LARGE_INTEGER*)&freq); QueryPerformanceCounter((LARGE_INTEGER*)&start)
+#define CHECK_TIME_END(start,end,freq,time) QueryPerformanceCounter((LARGE_INTEGER*)&end); time = (float)((float)(end - start) / (freq * 1.0e-3f))
+*/
+
 using namespace std;
 
 typedef struct {
@@ -58,6 +87,9 @@ void kadane2d(const string& inputPath, const string& outputPath){
     }
     inputFile.close();
 
+    // For Only Calculate Kadane
+    CHECK_TIME_START(_start, _freq);
+
     int maxSum = INT_MIN, finalLeft = -1, finalRight = -1, finalTop = -1, finalBottom = -1;
     // left column -> right column
     for(int left=0;left<n;++left){
@@ -92,6 +124,8 @@ void kadane2d(const string& inputPath, const string& outputPath){
             
         }
     }
+    CHECK_TIME_END(_start, _end, _freq, _compute_time);
+
     // output
     ofstream outputFile(outputPath);
     if(!outputFile.is_open()){
@@ -109,7 +143,7 @@ void kadane2d(const string& inputPath, const string& outputPath){
 }
 
 int main(){
-    ifstream configFile("HW1_Data_Open/HW1_config.txt");
+    ifstream configFile("Data/HW1_config.txt");
     if(!configFile.is_open()){
         cerr << "Error, cannot open HW1_config.txt." << endl;
         return 1;
@@ -123,12 +157,18 @@ int main(){
     for(int i=0;i<cases;i++){
         configFile >> inputBinFile >> outputTxtFile;
 
-        string inputPath = "HW1_Data_Open/" + inputBinFile;
-        string outputPath = "HW1_Data_Open/" + outputTxtFile;
+        string inputPath = "Data/" + inputBinFile;
+        string outputPath = "Data/" + outputTxtFile;
 
         //for debug
         cout << "----processing " << inputBinFile << "------" <<endl;
+        // Total Execution Time
+        //CHECK_TIME_START(_start,_freq);
+
         kadane2d(inputPath, outputPath);
+
+        //CHECK_TIME_END(_start,_end,_freq,_compute_time);
+        printf("[TIME] %.3f ms\n",_compute_time);
     }
     configFile.close();
     return 0;
