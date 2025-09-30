@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm> //max
 #include <climits> // INT_MIN
+#include <iomanip>
 
 //Time Check for Mac
 #include <chrono>
@@ -168,7 +169,8 @@ int main(){
         kadane2d(inputPath, outputPath);
 
         //CHECK_TIME_END(_start,_end,_freq,_compute_time);
-        printf("[TIME] %.3f ms\n",_compute_time);
+        //printf("[TIME] %.3f ms\n",_compute_time);
+        cout << "[TIME] " << fixed << setprecision(3) << _compute_time << " ms" << endl;
     }
     configFile.close();
     return 0;
